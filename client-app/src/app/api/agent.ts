@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { config } from "process";
 import { toast } from "react-toastify";
 import { history } from "../..";
-import { Activity } from "../models/activity";
+import { Activity, ActivityFormValues } from "../models/activity";
 import { User, UserFormValues} from "../models/user";
 import { store } from "../stores/store";
 
@@ -13,7 +13,7 @@ const sleep = (delay: number) => {
   });
 };
 
-axios.defaults.baseURL = "http://localhost:5000/api";
+axios.defaults.baseURL = 'http://localhost:5000/api';
 
 axios.interceptors.request.use(config => {
   const token = store.commonStore.token;
@@ -66,24 +66,23 @@ const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
 const requests = {
   get: <T>(url: string) => axios.get<T>(url).then(responseBody),
-  post: <T>(url: string, body: {}) =>
-    axios.get<T>(url, body).then(responseBody),
-  put: <T>(url: string, body: {}) => axios.get<T>(url, body).then(responseBody),
-  del: <T>(url: string) => axios.get<T>(url).then(responseBody),
+  post: <T>(url: string, body: {}) => axios.post<T>(url, body).then(responseBody),
+  put: <T>(url: string, body: {}) => axios.put<T>(url, body).then(responseBody),
+  del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 };
 
 const Activities = {
   list: () => requests.get<Activity[]>("/activities"),
   details: (id: string) => requests.get<Activity>(`/activities/${id}`),
-  create: (activity: Activity) => axios.post<void>("/activities", activity),
-  update: (activity: Activity) =>
-    axios.put<void>(`/activities/${activity.id}`, activity),
-  delete: (id: string) => axios.delete<void>(`/activities/${id}`),
+  create: (activity: ActivityFormValues) => requests.post<void>("/activities", activity),
+  update: (activity: ActivityFormValues) => requests.put<void>(`/activities/${activity.id}`, activity),
+  delete: (id: string) => requests.del<void>(`/activities/${id}`),
+  attend: (id:string) => requests.post<void>(`/activities/${id}/attend`, {})
 };
 
 const Account = {
   current: () => requests.get<User>('/account'),
-  login: (user: UserFormValues) => requests.post<User>('/account/login', user), 
+  login: (user: UserFormValues) => requests.post<User>('/account/login', user),
   register: (user: UserFormValues) => requests.post<User>('/account/register', user)
 }
 
